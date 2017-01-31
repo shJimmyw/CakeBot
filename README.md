@@ -16,7 +16,7 @@ You will also need the following python packages (These should be found on pip):
 
 ##Setup
 
-For setup, open the DiscordCredentials.py file and insert your server channel id, discord bot token, and api keys in their specified locations. Then simply run the DiscBot.py file.
+For setup, open the DiscordCredentials.py file and insert your server and channel id, discord bot token, and api keys in their specified locations. Then simply run the DiscBot.py file.
 
 ##Functionality
 
@@ -31,6 +31,7 @@ For setup, open the DiscordCredentials.py file and insert your server channel id
 
   * Functional youtube functionality that will play the audio of the given youtube url
   * Add multiple youtube videos to create an in server playlist
+  * Ban users for a temporary given amount of minutes
 
 
 See !commands for a full list of commands and their respective functionality.

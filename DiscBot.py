@@ -36,7 +36,19 @@ def commands(*args):
 		+ "!play       -- Plays all videos currently in the playlist\n"
 		+ "!youtube    -- Plays a youtube video given a youtube url\n"
 		+ "!nowplaying -- Displays title of currently playing youtube video\n"
-		+ "!disconnect -- Disconnects this bot from the voice channel\n")
+		+ "!disconnect -- Disconnects this bot from the voice channel\n"
+		+ "!banhammer  -- Bans a member of your guild for a a given number of minutes")
+
+@CakeBot.command()
+@asyncio.coroutine
+def banhammer(user: str, duration: int):
+	global client 
+	server = CakeBot.get_server(DiscordCredentials.serverID)
+	member = server.get_member_named(user)
+	client.ban(member, duration)
+	asyncio.sleep(duration * 60)
+	client.unban(server, member)
+
 
 @CakeBot.command()
 @asyncio.coroutine
@@ -100,7 +112,8 @@ def matchup(player, opponent):
 	if "error" in parsedData:
 		yield from CakeBot.say("No matchup found!")
 	else:
-		yield from CakeBot.say("KDA: " + str(parsedData[0]['statScore']) + "\nWin Rate: " + str(parsedData[0]['winRate']))
+		yield from CakeBot.say(player + " has a KDA of " + str(parsedData[0]['statScore']) + " and a win rate of " + str(parsedData[0]['winRate']) + 
+			"% versus "+ opponent) 
 
 @CakeBot.command()
 @asyncio.coroutine
@@ -154,6 +167,11 @@ def nowplaying(*args):
 		yield from CakeBot.say("Not currently playing anything, use command !playlist or !youtube to start")
 		return
 	yield from CakeBot.say("Currently Playing: " + player.title)
+
+@CakeBot.command()
+@asyncio.coroutine
+def source(*args):
+	yield from CakeBot.say("Sourcecode here: https://github.com/shJimmyw/CakeBot")
 
 
 @CakeBot.command()
