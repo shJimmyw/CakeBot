@@ -3,11 +3,11 @@ A Discord Bot written with the discord.py api wrapper developed by Rapptz that u
 
 ##Requirements
 
-Python 3.4.2
-Discord.py with voice support which you can find [here](https://github.com/Rapptz/discord.py)
-A Riot Games API key which you can obtain [here](https://developer.riotgames.com/)
-A champion.gg API key obtainable [here](http://api.champion.gg/)
-Either [ffmpeg](https://ffmpeg.org/download.html) or [avconv](https://libav.org/download/) 
+* Python 3.4.2
+* Discord.py with voice support which you can find [here](https://github.com/Rapptz/discord.py)
+* A Riot Games API key which you can obtain [here](https://developer.riotgames.com/)
+* A champion.gg API key obtainable [here](http://api.champion.gg/)
+* Either [ffmpeg](https://ffmpeg.org/download.html) or [avconv](https://libav.org/download/) 
 
 You will also need the following python packages (These should be found on pip):
   * [youtube-dl](https://rg3.github.io/youtube-dl/) 
