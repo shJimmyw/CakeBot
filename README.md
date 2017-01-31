@@ -13,7 +13,7 @@ You will also need the following python packages:
   * [youtube-dl](https://rg3.github.io/youtube-dl/) 
   * [requests](http://docs.python-requests.org/en/master/user/install/#install)
   * [PyNaCl](https://pypi.python.org/pypi/PyNaCl/)
-  You should be able to find these on pip if you prefer. 
+ You should be able to find these on pip if you prefer. 
 
 ##Setup
 
