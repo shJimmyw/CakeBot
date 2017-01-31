@@ -37,18 +37,26 @@ def commands(*args):
 		+ "!youtube    -- Plays a youtube video given a youtube url\n"
 		+ "!nowplaying -- Displays title of currently playing youtube video\n"
 		+ "!disconnect -- Disconnects this bot from the voice channel\n"
-		+ "!banhammer  -- Bans a member of your guild for a a given number of minutes")
+		+ "!banhammer  -- Bans a member from your server for a minute")
 
-@CakeBot.command()
+@CakeBot.command(pass_context=True)
 @asyncio.coroutine
-def banhammer(user: str, duration: int):
-	global client 
+def banhammer(context, user: str):
 	server = CakeBot.get_server(DiscordCredentials.serverID)
-	member = server.get_member_named(user)
-	client.ban(member, duration)
-	asyncio.sleep(duration * 60)
-	client.unban(server, member)
-
+	channel = CakeBot.get_channel(DiscordCredentials.channelID)
+	if channel.permissions_for(context.message.author).ban_members == False:
+		yield from CakeBot.say("You do not have permission to ban " + user + ". Please contact your administrator for details.")
+		return
+	member = server.get_member_named(user)   
+	if member == None:
+		yield from CakeBot.say("No member named " + user) 
+		return
+	try:
+		yield from CakeBot.ban(member, 0)
+		asyncio.sleep(60)
+		yield from CakeBot.unban(server, member)
+	except Exception:
+		yield from CakeBot.say("I do not have permission to ban users")
 
 @CakeBot.command()
 @asyncio.coroutine
