@@ -9,11 +9,10 @@ A Riot Games API key which you can obtain [here](https://developer.riotgames.com
 A champion.gg API key obtainable [here](http://api.champion.gg/)
 Either [ffmpeg](https://ffmpeg.org/download.html) or [avconv](https://libav.org/download/) 
 
-You will also need the following python packages:
+You will also need the following python packages (These should be found on pip):
   * [youtube-dl](https://rg3.github.io/youtube-dl/) 
   * [requests](http://docs.python-requests.org/en/master/user/install/#install)
   * [PyNaCl](https://pypi.python.org/pypi/PyNaCl/)
- You should be able to find these on pip if you prefer. 
 
 ##Setup
 
