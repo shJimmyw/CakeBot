@@ -30,9 +30,14 @@ def on_voice_state_update(before, after):
 	before_channel = before.voice.voice_channel
 	after_channel = after.voice.voice_channel
 	if after_channel != None and before_channel != after_channel:
-		yield from MacAndCheese.send_message(after.server, after.mention + ' has joined the voice channel: ' + after_channel.name)
+		yield from MacAndCheese.send_message(after.server, after.mention + " has joined the voice channel: " + after_channel.name)
 	elif after_channel == None:
-		yield from MacAndCheese.send_message(before.server, before.mention + ' has left the voice channel: ' + before_channel.name)
+		yield from MacAndCheese.send_message(before.server, before.mention + " has left the voice channel: " + before_channel.name)
+
+@MacAndCheese.event
+@asyncio.coroutine
+def on_member_join(member):
+	yield from MacAndCheese.send_message(member.server, "Welcome " + member.mention + " to " + member.server)
 
 #Bot commands
 
@@ -165,6 +170,8 @@ def matchup(player: str=None, opponent: str=None):
 		yield from MacAndCheese.say(player + " has a KDA of " + str(parsedData[0]['statScore']) + " and a win rate of " + str(parsedData[0]['winRate']) + 
 			"% versus "+ opponent) 
 
+#Youtube Commands start here
+
 @MacAndCheese.command()
 @asyncio.coroutine
 def playlist(url: str=None):
@@ -226,13 +233,16 @@ def nowplaying(*args):
 
 @MacAndCheese.command()
 @asyncio.coroutine
-def source(*args):
-	yield from MacAndCheese.say("Sourcecode here: https://github.com/shJimmyw/MacAndCheese")
+def disconnect():
+	global voice
+	if player.is_playing():
+		player.stop()
+	yield from voice.disconnect()
 
 @MacAndCheese.command()
 @asyncio.coroutine
-def disconnect():
-	global voice
-	yield from voice.disconnect()
+def source(*args):
+	yield from MacAndCheese.say("Sourcecode here: https://github.com/shJimmyw/MacAndCheese")
+
 
 MacAndCheese.run(DiscordCredentials.token)
