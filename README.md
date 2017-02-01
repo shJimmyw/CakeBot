@@ -32,6 +32,7 @@ For setup, open the DiscordCredentials.py file and insert your server and channe
   * Functional youtube functionality that will play the audio of the given youtube url
   * Add multiple youtube videos to create an in server playlist
   * Ban users for a minute if the bot and user both have permission
+  * Informs server via chat when another user joins a voice channel or leaves all voice channels in the server
 
 
 See !commands for a full list of commands and their respective functionality.

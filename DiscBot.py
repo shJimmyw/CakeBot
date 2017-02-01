@@ -15,13 +15,25 @@ handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w'
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
-
 voice = None
 player = None
 playList = []
-
 client = discord.Client()
 CakeBot = Bot(command_prefix="!")
+
+#Bot event handling
+
+@CakeBot.event
+@asyncio.coroutine
+def on_voice_state_update(before, after):
+	before_channel = before.voice.voice_channel
+	after_channel = after.voice.voice_channel
+	if after_channel != None and before_channel != after_channel:
+		yield from CakeBot.send_message(after.server, after.mention + ' has joined the voice channel: ' + after_channel.name)
+	elif after_channel == None:
+		yield from CakeBot.send_message(before.server, before.mention + ' has left the voice channel: ' + before_channel.name)
+
+#Bot commands
 
 @CakeBot.command()
 @asyncio.coroutine
@@ -58,6 +70,8 @@ def banhammer(context, user: str):
 	except Exception:
 		yield from CakeBot.say("I do not have permission to ban users")
 
+#League of Legends related commands
+
 @CakeBot.command()
 @asyncio.coroutine
 def toptenbans(*args):
@@ -78,6 +92,7 @@ def toptenbans(*args):
 @CakeBot.command()
 @asyncio.coroutine
 def champbuild(champion):
+	champion = string.capwords(champion)
 	data = requests.get('http://api.champion.gg/champion/' + champion + '/items/finished/mostWins?api_key=' + DiscordCredentials.championgg_token)
 	parsedData = json.loads(data.text)
 	if "error" in parsedData:
@@ -181,12 +196,10 @@ def nowplaying(*args):
 def source(*args):
 	yield from CakeBot.say("Sourcecode here: https://github.com/shJimmyw/CakeBot")
 
-
 @CakeBot.command()
 @asyncio.coroutine
 def disconnect():
 	global voice
 	yield from voice.disconnect()
-
 
 CakeBot.run(DiscordCredentials.token)
