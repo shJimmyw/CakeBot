@@ -6,6 +6,7 @@ import json
 import string
 import youtube_dl
 import time
+import random
 import logging
 from discord.ext.commands import Bot
 
@@ -49,11 +50,28 @@ def commands(*args):
 		+ "!youtube    -- Plays a youtube video given a youtube url\n"
 		+ "!nowplaying -- Displays title of currently playing youtube video\n"
 		+ "!disconnect -- Disconnects this bot from the voice channel\n"
-		+ "!banhammer  -- Bans a member from your server for a minute")
+		+ "!banhammer  -- Bans a member from your server for a minute"
+		+ "!dice       -- Rolls a dice between 1 and 6 or a given int greater than 1")
+
+@CakeBot.command()
+@asyncio.coroutine
+def dice(range: int=None):
+	if range == None:
+		output = random.randint(1,6)
+	elif range > 1:
+		output = random.randint(1,range)
+	else:
+		yield from CakeBot.say("Pick an integer greater than 1")
+		return
+	yield from CakeBot.say("Rolling a dice...\nDice landed on: " + str(output))
+
 
 @CakeBot.command(pass_context=True)
 @asyncio.coroutine
-def banhammer(context, user: str):
+def banhammer(context, user: str=None):
+	if user == None:
+		yield from CakeBot.say("Who do you want me to ban?")
+		return
 	server = CakeBot.get_server(DiscordCredentials.serverID)
 	channel = CakeBot.get_channel(DiscordCredentials.channelID)
 	if channel.permissions_for(context.message.author).ban_members == False:
@@ -91,7 +109,10 @@ def toptenbans(*args):
 
 @CakeBot.command()
 @asyncio.coroutine
-def champbuild(champion):
+def champbuild(champion: str=None):
+	if champion == None:
+		yield from CakeBot.say("What champion am I looking up?")
+		return
 	champion = string.capwords(champion)
 	data = requests.get('http://api.champion.gg/champion/' + champion + '/items/finished/mostWins?api_key=' + DiscordCredentials.championgg_token)
 	parsedData = json.loads(data.text)
@@ -109,7 +130,10 @@ def champbuild(champion):
 
 @CakeBot.command()
 @asyncio.coroutine
-def champstart(champion):
+def champstart(champion: str=None):
+	if champion == None:
+		yield from CakeBot.say("What champion am I looking up?")
+		return
 	data = requests.get('http://api.champion.gg/champion/' + champion + '/items/starters/mostWins?api_key=' + DiscordCredentials.championgg_token)
 	parsedData = json.loads(data.text)
 	if "error" in parsedData:
@@ -127,7 +151,10 @@ def champstart(champion):
 
 @CakeBot.command()
 @asyncio.coroutine
-def matchup(player, opponent):
+def matchup(player: str=None, opponent: str=None):
+	if player == None or opponent == None:
+		yield from CakeBot.say("I need the names of two champions. Try again")
+		return
 	player = string.capwords(player)
 	opponent = string.capwords(opponent)
 	data = requests.get('http://api.champion.gg/champion/' + player + '/matchup/' + opponent +'?api_key=' + DiscordCredentials.championgg_token)
@@ -140,7 +167,10 @@ def matchup(player, opponent):
 
 @CakeBot.command()
 @asyncio.coroutine
-def playlist(url:str):
+def playlist(url: str=None):
+	if url == None:
+		yield from CakeBot.say("I need the url of a youtube video")
+		return
 	global playList
 	playList.append(url)
 	yield from CakeBot.say("Added your youtube video!")
@@ -168,7 +198,10 @@ def play(*args):
 
 @CakeBot.command()
 @asyncio.coroutine
-def youtube(url: str):
+def youtube(url: str=None):
+	if url == None:
+		yield from CakeBot.say("I need the url of a youtube video")
+		return
 	global voice
 	global player
 	if player is not None and player.is_playing:
