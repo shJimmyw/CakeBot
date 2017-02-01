@@ -1,4 +1,4 @@
-# CakeBot
+# MacAndCheese
 A Discord Bot written with the discord.py api wrapper developed by Rapptz that uses the Riot Games League of Legends API as well as the champion.gg API. This bot was made for fun and for personal use. There is no set update schedule. 
 
 ##Requirements
