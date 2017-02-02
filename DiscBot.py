@@ -27,6 +27,12 @@ MacAndCheese = Bot(command_prefix="!")
 @MacAndCheese.event
 @asyncio.coroutine
 def on_voice_state_update(before, after):
+	"""Detects when a user's voice state changes.
+	If the user is in a different voice channel than before, a message is sent telling other users which channel the user has joined.
+	If the user is no longer in any voice channel, a message is sent telling other users which channel the user has left
+
+	"""
+
 	before_channel = before.voice.voice_channel
 	after_channel = after.voice.voice_channel
 	if after_channel != None and before_channel != after_channel:
@@ -37,6 +43,11 @@ def on_voice_state_update(before, after):
 @MacAndCheese.event
 @asyncio.coroutine
 def on_member_join(member):
+	"""Upon a neww user joining the server, a message is sent to the other users via the general chat that a new
+	user has joined the server.
+
+	"""
+
 	yield from MacAndCheese.send_message(member.server, "Welcome " + member.mention + " to " + member.server)
 
 #Bot commands
@@ -44,6 +55,12 @@ def on_member_join(member):
 @MacAndCheese.command()
 @asyncio.coroutine
 def commands(*args):
+	"""!commands
+
+	This command asks the bot to display a list of commands and their expected functionality.
+
+	"""
+
 	yield from MacAndCheese.say(
 		  "!commands   -- Displays all commands\n"
 		+ "!toptenbans -- Displays current 10 most banned champions\n"
@@ -61,6 +78,17 @@ def commands(*args):
 @MacAndCheese.command()
 @asyncio.coroutine
 def dice(range: int=None):
+	"""!dice
+
+	Args: 
+		range (int): Upper Limit in range of numbers
+
+	If the user provides zero arguments, the bot randomly delivers an integer between 1 and 6 inclusive.
+	If the user provides one argument, N, that is greater than 1, it delivers an integer between 1 and N inclusive.
+	If the user provides either 0 or 1 as an argument, it prompts the user to provide a valid integer greater than 1.
+
+	"""
+
 	if range == None:
 		output = random.randint(1,6)
 	elif range > 1:
@@ -74,6 +102,19 @@ def dice(range: int=None):
 @MacAndCheese.command(pass_context=True)
 @asyncio.coroutine
 def banhammer(context, user: str=None):
+	"""!banhammer
+	
+	Args:
+		user (str): Name of user intended to be banned
+	
+	If the user does not provide an argument, the bot prompts the user for one.
+	When provided an argument the bot checks if the user has ban permissions and if not will
+	ask prompt the user to contact the server administrator. If the user does have permission
+	it will check to see if the argument provided is the name of a valid user, if so it will 
+	then proceed to ban the given user for a minute before unbanning them.
+
+	"""
+
 	if user == None:
 		yield from MacAndCheese.say("Who do you want me to ban?")
 		return
@@ -98,6 +139,13 @@ def banhammer(context, user: str=None):
 @MacAndCheese.command()
 @asyncio.coroutine
 def toptenbans(*args):
+	"""!toptenbans
+
+	The bot makes a GET request through the champion.gg api. It provides the top ten banned champions as recorded by the champion.gg
+	database. The champions also have their ban rate and win percentage provided.
+
+	"""
+
 	data = requests.get('http://api.champion.gg/stats/champs/mostBanned?api_key=' + DiscordCredentials.championgg_token + '&page=1&limit=10')
 	parsedData = json.loads(data.text)
 	if "error" in parsedData:
@@ -115,6 +163,17 @@ def toptenbans(*args):
 @MacAndCheese.command()
 @asyncio.coroutine
 def champbuild(champion: str=None):
+	"""!champbuild
+
+	args:
+		champion(string): The name of the champion to lookup
+
+	The bot makes a GET request on champion.gg using the given argument as a champion name. If there's no such champion recorded in the database
+	then an error is given. Otherwise it takes the returned information and looks up each item on the Riot Games API with a GET request. The bot
+	then gives a list of the names of the items it looked up and the champion's winrate with the set of items.
+
+	"""
+
 	if champion == None:
 		yield from MacAndCheese.say("What champion am I looking up?")
 		return
@@ -136,6 +195,17 @@ def champbuild(champion: str=None):
 @MacAndCheese.command()
 @asyncio.coroutine
 def champstart(champion: str=None):
+	"""!champstart
+
+	args:
+		champion(string): The name of the champion to lookup
+
+	The bot makes a GET request on champion.gg using the given argument as a champion name. If there's no such champion recorded in the database
+	then an error is given. Otherwise it takes the returned information and looks up each item on the Riot Games API with a GET request. The bot
+	then gives a list of the names of the items it looked up and the champion's winrate with the starting items.
+
+	"""
+
 	if champion == None:
 		yield from MacAndCheese.say("What champion am I looking up?")
 		return
@@ -157,6 +227,17 @@ def champstart(champion: str=None):
 @MacAndCheese.command()
 @asyncio.coroutine
 def matchup(player: str=None, opponent: str=None):
+	"""!matchup
+
+	args:
+		player(string): The name of the champion the user is playing
+		opponent(string): The enemy champion the user is comparing the first one with
+
+	The bot makes a GET request on champion.gg using the given arguments as champion names. The bot then sends a message that provides the winrate
+	and KDA ratio that the first champion has versus the second one. 
+
+	"""
+
 	if player == None or opponent == None:
 		yield from MacAndCheese.say("I need the names of two champions. Try again")
 		return
@@ -175,6 +256,16 @@ def matchup(player: str=None, opponent: str=None):
 @MacAndCheese.command()
 @asyncio.coroutine
 def playlist(url: str=None):
+	"""
+	!playlist
+
+	args:
+		url(string): The url of the youtube video to be added to the playlist
+
+		Takes a string as the url of a youtube video and adds it to a list of strings.
+
+	"""
+
 	if url == None:
 		yield from MacAndCheese.say("I need the url of a youtube video")
 		return
@@ -185,6 +276,16 @@ def playlist(url: str=None):
 @MacAndCheese.command()
 @asyncio.coroutine
 def play(*args):
+	"""
+	!play
+
+		Begins playing each video in the playlist variable. If the playlist is empty it prompts the users to add videos.
+		While the playlist is not empty it enters the given voice channel and plays a video in a FIFO order and does
+	    an asynchronous sleep for the video's duration and then plays the next one in the list. If during this there 
+	    are no more videos in the list, it will automatically disconnect from the voice channel.
+
+	"""	
+
 	global voice
 	global playList
 	global player
@@ -206,6 +307,17 @@ def play(*args):
 @MacAndCheese.command()
 @asyncio.coroutine
 def youtube(url: str=None):
+	"""!youtube
+	
+	args: 
+		url(string) : The url of the youtube video to be played
+
+	The bot enters the voice channel and plays the youtube video in the url given in the argument. At the end of the video it will automatically
+	disconnect from the channel.
+
+
+	"""
+
 	if url == None:
 		yield from MacAndCheese.say("I need the url of a youtube video")
 		return
@@ -225,6 +337,12 @@ def youtube(url: str=None):
 @MacAndCheese.command()
 @asyncio.coroutine
 def nowplaying(*args):
+	"""!nowplaying
+
+	The bot displays the title of the video currently playing. If there is no such video it will prompt the user to add one.
+
+	"""
+
 	global player
 	if player is None:
 		yield from MacAndCheese.say("Not currently playing anything, use command !playlist or !youtube to start")
@@ -234,6 +352,11 @@ def nowplaying(*args):
 @MacAndCheese.command()
 @asyncio.coroutine
 def disconnect():
+	"""!disconnect
+
+	Disconnects the bot from the current voice channel and stops playing any video currently played.
+
+	"""
 	global voice
 	if player.is_playing():
 		player.stop()
@@ -242,6 +365,11 @@ def disconnect():
 @MacAndCheese.command()
 @asyncio.coroutine
 def source(*args):
+	"""!source
+		
+	Provides the source code in a github link for this bot.
+
+	"""
 	yield from MacAndCheese.say("Sourcecode here: https://github.com/shJimmyw/MacAndCheese")
 
 
