@@ -379,7 +379,7 @@ def volume(vol_level: int=None):
 	"""
 	if vol_level == None:
 		yield from MacAndCheese.say("What do you want the volume at? Please include a number")
-	elif: player is None or player.is_playing == False:
+	elif player is None or player.is_playing == False:
 		yield from MacAndCheese.say("Not currently playing a video!")
 	elif vol_level > 200:
 		player.volume = 2
