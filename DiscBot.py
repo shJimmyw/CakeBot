@@ -71,6 +71,8 @@ def commands(*args):
 		+ "!play       -- Plays all videos currently in the playlist\n"
 		+ "!youtube    -- Plays a youtube video given a youtube url\n"
 		+ "!nowplaying -- Displays title of currently playing youtube video\n"
+		+ "!getVolume  -- Get current volume of video"
+		+ "!volume     -- Sets the volume of the player to a percentage"
 		+ "!disconnect -- Disconnects this bot from the voice channel\n"
 		+ "!banhammer  -- Bans a member from your server for a minute"
 		+ "!dice       -- Rolls a dice between 1 and 6 or a given int greater than 1")
@@ -348,6 +350,47 @@ def nowplaying(*args):
 		yield from MacAndCheese.say("Not currently playing anything, use command !playlist or !youtube to start")
 		return
 	yield from MacAndCheese.say("Currently Playing: " + player.title)
+
+@MacAndCheese.command()
+@asyncio.coroutine
+def getVolume(*args):
+	"""!getVolume
+
+	The bot displays the current volume level of the video being played. 
+
+	"""
+	if player is None or player.is_playing == False:
+		yield from MacAndCheese.say("Not currently playing a video!")
+
+	yield from MacAndCheese.say("Volume level is currently at " + str(player.volume * 100))
+
+
+@MacAndCheese.command()
+@asyncio.coroutine
+def volume(vol_level: int=None):
+	"""!volume
+
+	args: 
+		vol_level(int) : The volume to set the player to
+
+	The bot gets an integer between 0 and 200 inclusive and sets the audio player's volume to that percentage. If the argument is less than 0 or 
+	greater than 200, it will instead default it to 0 or 200 respectively. If there is no currently playing video, it will inform the user of this.
+
+	"""
+	if vol_level == None:
+		yield from MacAndCheese.say("What do you want the volume at? Please include a number")
+	elif: player is None or player.is_playing == False:
+		yield from MacAndCheese.say("Not currently playing a video!")
+	elif vol_level > 200:
+		player.volume = 2
+		yield from MacAndCheese.say("Volume level requested is too high, defaulting to max")
+	elif vol_level < 0:
+		player.volume = 0
+		yield from MacAndCheese.say("Volume level requested is too low, defaulting to minimum")
+	else:
+		player.volume = vol_level/100
+		yield from MacAndCheese.say("Volume is now: " + str(vol_level))
+
 
 @MacAndCheese.command()
 @asyncio.coroutine
