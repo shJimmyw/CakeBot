@@ -8,6 +8,7 @@ import youtube_dl
 import time
 import random
 import logging
+from player import vidPlayer
 from discord.ext.commands import Bot
 
 logger = logging.getLogger('discord')
@@ -15,23 +16,21 @@ logger.setLevel(logging.DEBUG)
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
-
-voice = None
-player = None
-playList = []
 client = discord.Client()
 MacAndCheese = Bot(command_prefix="!")
+vid = vidPlayer(MacAndCheese)
+
 
 #Bot event handling
-
+"""
 @MacAndCheese.event
 @asyncio.coroutine
 def on_voice_state_update(before, after):
-	"""Detects when a user's voice state changes.
+	Detects when a user's voice state changes.
 	If the user is in a different voice channel than before, a message is sent telling other users which channel the user has joined.
 	If the user is no longer in any voice channel, a message is sent telling other users which channel the user has left
 
-	"""
+	
 
 	before_channel = before.voice.voice_channel
 	after_channel = after.voice.voice_channel
@@ -39,7 +38,7 @@ def on_voice_state_update(before, after):
 		yield from MacAndCheese.send_message(after.server, after.mention + " has joined the voice channel: " + after_channel.name)
 	elif after_channel == None:
 		yield from MacAndCheese.send_message(before.server, before.mention + " has left the voice channel: " + before_channel.name)
-
+"""
 @MacAndCheese.event
 @asyncio.coroutine
 def on_member_join(member):
@@ -67,14 +66,16 @@ def commands(*args):
 		+ "!champbuild -- Displays most winning final build for the given champion\n"
 		+ "!champstart -- Displays most winning starting items for the given champion\n"
 		+ "!matchup    -- Displays the win percentage and KDA for a given champion and enemy champion\n"
-		+ "!playlist   -- Takes a youtube url and adds it to the bot playlist\n"
+		+ "!add        -- Takes a youtube url and adds it to the bot playlist\n"
 		+ "!play       -- Plays all videos currently in the playlist\n"
 		+ "!youtube    -- Plays a youtube video given a youtube url\n"
 		+ "!nowplaying -- Displays title of currently playing youtube video\n"
 		+ "!getVolume  -- Get current volume of video"
-		+ "!volume     -- Sets the volume of the player to a percentage"
+		+ "!volume     -- Sets the volume of the player to a percentage\n"
+		+ "!playPause  -- Pauses or Resumes the player\n"
+		+ "!skip       -- Skips to next video\n"
 		+ "!disconnect -- Disconnects this bot from the voice channel\n"
-		+ "!banhammer  -- Bans a member from your server for a minute"
+		+ "!banhammer  -- Bans a member from your server for a minute\n"
 		+ "!dice       -- Rolls a dice between 1 and 6 or a given int greater than 1")
 
 @MacAndCheese.command()
@@ -168,7 +169,7 @@ def champbuild(champion: str=None):
 	"""!champbuild
 
 	args:
-		champion(string): The name of the champion to lookup
+		champion (str): The name of the champion to lookup
 
 	The bot makes a GET request on champion.gg using the given argument as a champion name. If there's no such champion recorded in the database
 	then an error is given. Otherwise it takes the returned information and looks up each item on the Riot Games API with a GET request. The bot
@@ -200,7 +201,7 @@ def champstart(champion: str=None):
 	"""!champstart
 
 	args:
-		champion(string): The name of the champion to lookup
+		champion (str): The name of the champion to lookup
 
 	The bot makes a GET request on champion.gg using the given argument as a champion name. If there's no such champion recorded in the database
 	then an error is given. Otherwise it takes the returned information and looks up each item on the Riot Games API with a GET request. The bot
@@ -232,7 +233,7 @@ def matchup(player: str=None, opponent: str=None):
 	"""!matchup
 
 	args:
-		player(string): The name of the champion the user is playing
+		player (str): The name of the champion the user is playing
 		opponent(string): The enemy champion the user is comparing the first one with
 
 	The bot makes a GET request on champion.gg using the given arguments as champion names. The bot then sends a message that provides the winrate
@@ -253,157 +254,83 @@ def matchup(player: str=None, opponent: str=None):
 		yield from MacAndCheese.say(player + " has a KDA of " + str(parsedData[0]['statScore']) + " and a win rate of " + str(parsedData[0]['winRate']) + 
 			"% versus "+ opponent) 
 
-#Youtube Commands start here
-
 @MacAndCheese.command()
 @asyncio.coroutine
-def playlist(url: str=None):
-	"""
-	!playlist
+def add(url: str=None):
+	"""!add
 
 	args:
-		url(string): The url of the youtube video to be added to the playlist
+		url (str): The url of the video to play
 
-		Takes a string as the url of a youtube video and adds it to a list of strings.
-
+	Adds the url to the bot's playlist.
+	
 	"""
 
 	if url == None:
-		yield from MacAndCheese.say("I need the url of a youtube video")
+		yield from MacAndCheese.say("I need a url of a youtube video")
 		return
-	global playList
-	playList.append(url)
-	yield from MacAndCheese.say("Added your youtube video!")
-
-@MacAndCheese.command()
-@asyncio.coroutine
-def play(*args):
-	"""
-	!play
-
-		Begins playing each video in the playlist variable. If the playlist is empty it prompts the users to add videos.
-		While the playlist is not empty it enters the given voice channel and plays a video in a FIFO order and does
-	    an asynchronous sleep for the video's duration and then plays the next one in the list. If during this there 
-	    are no more videos in the list, it will automatically disconnect from the voice channel.
-
-	"""	
-
-	global voice
-	global playList
-	global player
-	if len(playList) == 0:
-		yield from MacAndCheese.say("No songs in playlist, use !playlist to add songs")
-		return
-	elif player is not None and player.is_playing:
-		yield from MacAndCheese.say("Already playing " + player.title)
-		return
-	channel = MacAndCheese.get_channel(DiscordCredentials.channelID)
-	if voice == None:
-		voice = yield from MacAndCheese.join_voice_channel(channel)
-	while len(playList) > 0:
-		player = yield from voice.create_ytdl_player(playList.pop(0),use_avconv=True)
-		player.start()
-		yield from asyncio.sleep(player.duration)
-	yield from voice.disconnect()
+	yield from vid.playlist(url)
 
 @MacAndCheese.command()
 @asyncio.coroutine
 def youtube(url: str=None):
 	"""!youtube
 	
-	args: 
-		url(string) : The url of the youtube video to be played
+	args:
+		url (str): The url of the video to play
 
-	The bot enters the voice channel and plays the youtube video in the url given in the argument. At the end of the video it will automatically
-	disconnect from the channel.
-
+	Plays the video at the url to the members of the voice channel provided.
 
 	"""
 
 	if url == None:
-		yield from MacAndCheese.say("I need the url of a youtube video")
+		yield from MacAndCheese.say("I need a url of a youtube video")
 		return
-	global voice
-	global player
-	if player is not None and player.is_playing:
-		yield from MacAndCheese.say("Already playing " + player.title)
-		return
-	channel = MacAndCheese.get_channel(DiscordCredentials.channelID)
-	if voice == None:
-		voice = yield from MacAndCheese.join_voice_channel(channel)
-	player = yield from voice.create_ytdl_player(url, use_avconv=True)
-	player.start()
-	yield from asyncio.sleep(player.duration)
-	yield from voice.disconnect()
+	yield from vid.play(url)
 
 @MacAndCheese.command()
 @asyncio.coroutine
-def nowplaying(*args):
-	"""!nowplaying
-
-	The bot displays the title of the video currently playing. If there is no such video it will prompt the user to add one.
-
-	"""
-
-	global player
-	if player is None:
-		yield from MacAndCheese.say("Not currently playing anything, use command !playlist or !youtube to start")
-		return
-	yield from MacAndCheese.say("Currently Playing: " + player.title)
-
-@MacAndCheese.command()
-@asyncio.coroutine
-def getVolume(*args):
-	"""!getVolume
-
-	The bot displays the current volume level of the video being played. 
-
-	"""
-	if player is None or player.is_playing == False:
-		yield from MacAndCheese.say("Not currently playing a video!")
-
-	yield from MacAndCheese.say("Volume level is currently at " + str(player.volume * 100))
-
-
-@MacAndCheese.command()
-@asyncio.coroutine
-def volume(vol_level: int=None):
-	"""!volume
-
-	args: 
-		vol_level(int) : The volume to set the player to
-
-	The bot gets an integer between 0 and 200 inclusive and sets the audio player's volume to that percentage. If the argument is less than 0 or 
-	greater than 200, it will instead default it to 0 or 200 respectively. If there is no currently playing video, it will inform the user of this.
-
-	"""
-	if vol_level == None:
-		yield from MacAndCheese.say("What do you want the volume at? Please include a number")
-	elif player is None or player.is_playing == False:
-		yield from MacAndCheese.say("Not currently playing a video!")
-	elif vol_level > 200:
-		player.volume = 2
-		yield from MacAndCheese.say("Volume level requested is too high, defaulting to max")
-	elif vol_level < 0:
-		player.volume = 0
-		yield from MacAndCheese.say("Volume level requested is too low, defaulting to minimum")
-	else:
-		player.volume = vol_level/100
-		yield from MacAndCheese.say("Volume is now: " + str(vol_level))
-
-
-@MacAndCheese.command()
-@asyncio.coroutine
-def disconnect():
+def disconnect(*args):
 	"""!disconnect
 
-	Disconnects the bot from the current voice channel and stops playing any video currently played.
+	Stops the currently played video and disconnects the bot from the voice channel.
 
 	"""
-	global voice
-	if player.is_playing():
-		player.stop()
-	yield from voice.disconnect()
+
+	yield from vid.disconnect()
+
+@MacAndCheese.command()
+@asyncio.coroutine
+def playPause(*args):
+	"""!playPause
+
+	Pauses the player if it is currently playing a video. Resumes if it is already paused.
+
+	"""
+	
+	yield from vid.pauseAndResume()
+
+@MacAndCheese.command()
+@asyncio.coroutine
+def play(*args):
+	"""!play
+
+	Sequentially plays all videos added to the playlist in FIFO order.
+
+	"""
+
+	yield from vid.playAll()
+
+@MacAndCheese.command()
+@asyncio.coroutine
+def skip(*args):
+	"""!skip
+
+	Stops current video and plays next in queue.
+
+
+	"""
+	yield from vid.skip()
 
 @MacAndCheese.command()
 @asyncio.coroutine
@@ -413,7 +340,46 @@ def source(*args):
 	Provides the source code in a github link for this bot.
 
 	"""
+
 	yield from MacAndCheese.say("Sourcecode here: https://github.com/shJimmyw/MacAndCheese")
 
+@MacAndCheese.command()
+@asyncio.coroutine
+def volume(vol: int=None):
+	"""!volume
+	
+	args:
+		vol (int): The volume level the user wants the player at
+
+	Adjusts the volume of the player between 0 and 200 with any values outside of those bounds 
+	defaulting to 0 if lower and 200 if higher.
+
+	"""
+
+	yield from vid.changeVolume(vol)
+
+@MacAndCheese.command()
+@asyncio.coroutine
+def getVolume(*args):
+	"""!getVolume
+
+	Returns the current volume of the player.
+
+	"""
+
+	yield from vid.getVolume()
+
+@MacAndCheese.command()
+@asyncio.coroutine
+def nowplaying(*args):
+	"""!nowplaying
+	
+	Returns the current playing video title.
+
+	"""
+
+	yield from vid.now()
 
 MacAndCheese.run(DiscordCredentials.token)
+
+
