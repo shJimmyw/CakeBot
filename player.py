@@ -1,5 +1,4 @@
 import discord
-import DiscordCredentials
 import asyncio
 import youtube_dl
 import string
@@ -14,12 +13,12 @@ class vidPlayer:
         self.player = None
 
     @asyncio.coroutine
-    def playAll(self):
+    def playAll(self, channel: discord.Channel=None):
         if len(self.list) == 0:
             self.bot.say("No videos in the playlist")
             return
         if self.voice is None:
-            self.voice = yield from self.bot.join_voice_channel(self.bot.get_channel(DiscordCredentials.channelID))
+            self.voice = yield from self.bot.join_voice_channel(channel)
         self.player = yield from self.voice.create_ytdl_player(self.list.pop(0), after=self.threadsafePlayNext, use_avconv=True)
         self.player.start()
 
@@ -30,9 +29,9 @@ class vidPlayer:
         yield from self.bot.say("Added your video!")
 
     @asyncio.coroutine
-    def play(self, url: str=None):
+    def play(self, url: str=None, channel: discord.Channel=None):
         if self.voice is None:
-            self.voice = yield from self.bot.join_voice_channel(self.bot.get_channel(DiscordCredentials.channelID))
+            self.voice = yield from self.bot.join_voice_channel(channel)
         self.player = yield from self.voice.create_ytdl_player(url, after=self.threadsafeDisconnect, use_avconv=True)
         self.player.start()
 

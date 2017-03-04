@@ -76,6 +76,7 @@ def commands(*args):
 		+ "!skip       -- Skips to next video\n"
 		+ "!disconnect -- Disconnects this bot from the voice channel\n"
 		+ "!banhammer  -- Bans a member from your server for a minute\n"
+		+ "!clear      -- Searches past messages and deletes those that contain the given keyword"
 		+ "!dice       -- Rolls a dice between 1 and 6 or a given int greater than 1")
 
 @MacAndCheese.command()
@@ -121,8 +122,8 @@ def banhammer(context, user: str=None):
 	if user == None:
 		yield from MacAndCheese.say("Who do you want me to ban?")
 		return
-	server = MacAndCheese.get_server(DiscordCredentials.serverID)
-	channel = MacAndCheese.get_channel(DiscordCredentials.channelID)
+	server = context.message.server
+	channel = context.message.channel
 	if channel.permissions_for(context.message.author).ban_members == False:
 		yield from MacAndCheese.say("You do not have permission to ban " + user + ". Please contact your administrator for details.")
 		return
@@ -136,6 +137,31 @@ def banhammer(context, user: str=None):
 		yield from MacAndCheese.unban(server, member)
 	except Exception:
 		yield from MacAndCheese.say("I do not have permission to ban users")
+
+@MacAndCheese.command(pass_context=True)
+@asyncio.coroutine
+def clear(context, keyword: str=None, numMessages: int=None):
+	"""!clear
+
+	Args:
+		keyword (str): Term in message that the user wants to delete
+		numMessages (int): The number of messages to search from, defaults to 100 otherwise.
+
+	Deletes all messages with the given keyword in it from the last 100 messages. 
+
+	"""
+
+	channel = context.message.channel
+	if channel.permissions_for(context.message.author).manage_messages == False:
+		yield from MacAndCheese.say("You do not have permission to delete messages. Please contact your administrator for details.")
+		return
+	if numMessages is None:
+		numMessages = 100
+	listOfDeleted = yield from client.purge_from(channel, limit=numMessages)
+	try:
+		yield from MacAndCheese.say("Deleted " + str(len(listOfDeleted)))
+	except Exception:
+		yield from MacAndCheese.say("I do not have permission to delete messages at this time")
 
 #League of Legends related commands
 
@@ -271,9 +297,11 @@ def add(url: str=None):
 		return
 	yield from vid.playlist(url)
 
-@MacAndCheese.command()
+#Youtube Commands
+
+@MacAndCheese.command(pass_context=True)
 @asyncio.coroutine
-def youtube(url: str=None):
+def youtube(context, url: str=None):
 	"""!youtube
 	
 	args:
@@ -286,7 +314,10 @@ def youtube(url: str=None):
 	if url == None:
 		yield from MacAndCheese.say("I need a url of a youtube video")
 		return
-	yield from vid.play(url)
+	elif context.message.author.voice.voice_channel is none:
+		yield from MacAndCheese.say("Join the voice channel you want to play audio to")
+		return
+	yield from vid.play(url=url, channel=context.message.author.voice.voice_channel)
 
 @MacAndCheese.command()
 @asyncio.coroutine
@@ -310,16 +341,18 @@ def playPause(*args):
 	
 	yield from vid.pauseAndResume()
 
-@MacAndCheese.command()
+@MacAndCheese.command(pass_context=True)
 @asyncio.coroutine
-def play(*args):
+def play(context):
 	"""!play
 
 	Sequentially plays all videos added to the playlist in FIFO order.
 
 	"""
-
-	yield from vid.playAll()
+	if context.message.author.voice.voice_channel is None:
+		yield from MacAndCheese.say("Join the voice channel you want to play audio to")
+		return
+	yield from vid.playAll(context.message.author.voice.voice_channel)
 
 @MacAndCheese.command()
 @asyncio.coroutine
