@@ -76,7 +76,7 @@ def commands(*args):
 		+ "!skip       -- Skips to next video\n"
 		+ "!disconnect -- Disconnects this bot from the voice channel\n"
 		+ "!banhammer  -- Bans a member from your server for a minute\n"
-		+ "!clear      -- Searches past messages and deletes those that contain the given keyword"
+		+ "!clear      -- Searches past messages and deletes those that contain the given keyword\n"
 		+ "!dice       -- Rolls a dice between 1 and 6 or a given int greater than 1")
 
 @MacAndCheese.command()
