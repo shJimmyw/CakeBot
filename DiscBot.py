@@ -70,7 +70,7 @@ def commands(*args):
 		+ "!play       -- Plays all videos currently in the playlist\n"
 		+ "!youtube    -- Plays a youtube video given a youtube url\n"
 		+ "!nowplaying -- Displays title of currently playing youtube video\n"
-		+ "!getVolume  -- Get current volume of video"
+		+ "!getVolume  -- Get current volume of video\n"
 		+ "!volume     -- Sets the volume of the player to a percentage\n"
 		+ "!playPause  -- Pauses or Resumes the player\n"
 		+ "!skip       -- Skips to next video\n"
