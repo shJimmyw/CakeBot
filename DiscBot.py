@@ -314,7 +314,7 @@ def youtube(context, url: str=None):
 	if url == None:
 		yield from MacAndCheese.say("I need a url of a youtube video")
 		return
-	elif context.message.author.voice.voice_channel is none:
+	elif context.message.author.voice.voice_channel is None:
 		yield from MacAndCheese.say("Join the voice channel you want to play audio to")
 		return
 	yield from vid.play(url=url, channel=context.message.author.voice.voice_channel)
